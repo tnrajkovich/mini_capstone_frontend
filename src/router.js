@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Router from "vue-router";
 import Home from "./views/Home.vue";
+import ProductsNew from "./views/ProductsNew.vue";
 import Test from "./views/Test.vue";
 import Signup from "./views/Signup.vue";
 import Login from "./views/Login.vue";
@@ -44,6 +45,11 @@ export default new Router({
       path: "/logout",
       name: "logout",
       component: Logout
+    },
+    {
+      path: "/products/new",
+      name: "products-new",
+      component: ProductsNew
     }
   ]
 });
