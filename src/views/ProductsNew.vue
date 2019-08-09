@@ -2,16 +2,26 @@
   <div class="container new">
     <h1>{{ message }}</h1>
     <h2>New property</h2>
-    Name:
-    <input v-model="name" type="text" />
-    Price:
-    <input v-model="price" type="text" />
-    Description:
-    <input v-model="description" type="text" />
-    Image URL:
-    <input v-model="image_url" type="text" />
-    Supplier:
-    <input v-model="supplier" type="text" />
+    <div>
+      Name:
+      <input v-model="name" type="text" />
+    </div>
+    <div>
+      Price:
+      <input v-model="price" type="text" />
+    </div>
+    <div>
+      Description:
+      <input v-model="description" type="text" />
+    </div>
+    <div>
+      Image URL:
+      <input v-model="image_url" type="text" />
+    </div>
+    <div>
+      Supplier:
+      <input v-model="supplier" type="text" />
+    </div>
     <button v-on:click="createProperty">Create property</button>
   </div>
 </template>
@@ -26,7 +36,8 @@ export default {
     return {
       message: "Welcome to Vue.js!",
       products: [],
-      inputProduct: [],
+      product: {},
+      inputProduct: {},
       more_info: {}
     };
   },
@@ -48,7 +59,7 @@ export default {
       };
       axios.post("/api/products", params).then(response => {
         console.log("Success", response.data);
-        this.products.push(response.data);
+        this.$router.push(response.data);
         this.name = "";
         this.price = "";
         this.description = "";

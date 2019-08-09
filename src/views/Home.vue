@@ -2,6 +2,12 @@
   <div class="home">
     <h1>{{ message }}</h1>
     <h2>New property</h2>
+    <button v-on:click="sortAttribute = 'name'" type="text">Sort by name</button>
+    Search:
+    <input v-model="searchFilter" type="text" />
+    <datalist id="names">
+      <option v-for="product in products">{{ product.name }}</option>
+    </datalist>
     Name:
     <input v-model="name" type="text" />
     Price:
@@ -12,29 +18,34 @@
     <input v-model="image_url" type="text" />
     Supplier:
     <input v-model="supplier" type="text" />
-    <button v-on:click="createProperty">Create property</button>
-    <div v-for="product in products">
+    <button v-on:click="createProperty" class="socrata-icon-arrow-up2 sort-indicator">Create property</button>
+    <div v-for="product in orderBy(filterBy(products, searchFilter, 'name'), sortAttribute)">
       <h2>{{ product.name }}</h2>
       <p>{{ product.price }}</p>
       <img v-bind:src="product.image_url" alt="" />
       <div>
-        <button v-on:click="currentProduct = product">More info</button>
-        <div v-if="product === currentProduct">
-          <p>Name: {{ currentProduct.name }}</p>
-          <p>Price: {{ currentProduct.price }}</p>
-          <p>Description: {{ currentProduct.description }}</p>
-        </div>
+        <router-link v-bind:to="`/api/products/${product.id}`">More info</router-link>
+        <router-link v-bind:to="`/api/products/${product.id}/edit`">Edit property</router-link>
         <div>
-          <h2>Edit property</h2>
-          Name:
-          <input v-model="product.name" type="text" />
-          Price:
-          <input v-model="product.price" type="text" />
-          Description:
-          <input v-model="product.description" type="text" />
-          Image URL:
-          <input v-model="product.image_url" type="text" />
-          <button v-on:click="updateProduct(product)">Edit property</button>
+          <transition-group
+            class="card"
+            v-bind:class="{ selected: currentProduct === product }"
+            v-on:click="product = currentProduct"
+            appear
+            enter-active-class="animated fadeIn"
+            leave-active-class="animated fadeOut"
+          >
+            <h2>Edit property</h2>
+            Name:
+            <input v-model="product.name" type="text" />
+            Price:
+            <input v-model="product.price" type="text" />
+            Description:
+            <input v-model="product.description" type="text" />
+            Image URL:
+            <input v-model="product.image_url" type="text" />
+            <button v-on:click="updateProduct(product)">Edit property</button>
+          </transition-group>
         </div>
       </div>
       <button v-on:click="deleteProduct(product)">Delete property</button>
@@ -42,18 +53,29 @@
   </div>
 </template>
 
-<style></style>
+<style>
+.selected {
+  color: white;
+  background-color: magenta;
+}
+</style>
 
 <script>
 import axios from "axios";
+import Vue2Filters from "vue2-filters";
 
 export default {
+  mixins: [Vue2Filters.mixin],
   data: function() {
     return {
       message: "Welcome to Vue.js!",
       products: [],
-      inputProduct: [],
-      more_info: {}
+      product: {},
+      more_info: {},
+      inputProduct: {},
+      currentProduct: {},
+      searchFilter: "",
+      sortAttribute: "name"
     };
   },
   created: function() {
@@ -82,28 +104,6 @@ export default {
         this.supplier = "";
       });
     }
-  },
-  showProperty: function(product) {
-    if (this.currentProduct === inputProduct) {
-      this.currentProduct = {};
-    } else {
-      this.currentProduct = inputProduct;
-    }
-  },
-  updateProduct: function(product) {
-    var params = {
-      name: inputProduct.name,
-      price: inputProduct.price,
-      description: inputProduct.description,
-      image_url: inputProduct.image_url
-    };
-    axios.patch("/api/products/" + product.id, params).then(response => {
-      console.log("Successful update", response.data);
-      this.name = response.data.name;
-      this.price = response.data.price;
-      this.description = response.data.description;
-      this.image_url = response.data.image_url;
-    });
   },
   destroyProduct: function(inputProduct) {
     axios.delete("/api/products/" + inputProduct.id).then(response => {
